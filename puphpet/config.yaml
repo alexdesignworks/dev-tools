@@ -2,35 +2,39 @@
 vagrantfile-local:
     vm:
         box: ubuntu-precise12042-x64-vbox43
-        box_url: 'http://box.puphpet.com/ubuntu-precise12042-x64-vbox43.box'
-        hostname: vagrant.local
+        box_url: puphpet/debian75-x64
+        hostname: null
+        memory: '512'
+        chosen_provider: virtualbox
         network:
             private_network: 172.16.10.10
             forwarded_port:
-                zfR7k9MpNqfI:
+                ZInkwHJexPyd:
                     host: '8754'
                     guest: '22'
         provider:
             virtualbox:
                 modifyvm:
                     natdnshostresolver1: on
-                    memory: '2048'
                 setextradata:
                     VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root: 1
+            vmware:
+                numvcpus: 1
         provision:
             puppet:
                 manifests_path: puphpet/puppet
                 manifest_file: manifest.pp
+                module_path: puphpet/puppet/modules
                 options:
                     - '--verbose'
                     - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
                     - '--parser future'
         synced_folder:
-            M5PljiGzO6Qa:
+            huDDbh7ptpAM:
                 source: /www/drupal-dev/drupal7
                 target: /var/www/drupal7
                 nfs: 'true'
-            ZpfT8w0uGD6P:
+            74wdHYjVLeyd:
                 source: /www/drupal-dev/drupal8
                 target: /var/www/drupal8
                 nfs: 'true'
@@ -80,7 +84,7 @@ apache:
         - php
         - rewrite
     vhosts:
-        BfucBmrX0CSz:
+        1tKHxejYsUCD:
             servername: drupal7.local
             docroot: /var/www/drupal7
             port: '80'
@@ -93,7 +97,7 @@ apache:
             ssl_key: ''
             ssl_chain: ''
             ssl_certs_dir: ''
-        ba8GkRNglHkc:
+        vKUVzFtxxGCL:
             servername: drupal8.local
             docroot: /var/www/drupal8
             port: '80'
@@ -111,7 +115,7 @@ apache:
 nginx:
     install: 0
     vhosts:
-        D84iRT0hwxPn:
+        lLU173O8Vzru:
             server_name: awesome.dev
             server_aliases:
                 - www.awesome.dev
@@ -140,7 +144,6 @@ php:
             - console_table
         pecl:
             - pecl_http
-            - APC
     ini:
         display_errors: On
         error_reporting: '-1'
@@ -166,7 +169,7 @@ mysql:
     phpmyadmin: 0
     adminer: 0
     databases:
-        yFlXUE8Fbt6S:
+        InMMV7hedQzJ:
             grant:
                 - ALL
             name: drupal7
@@ -174,7 +177,7 @@ mysql:
             user: admin
             password: password
             sql_file: ''
-        YjeXyySbYAKB:
+        iiUxxfPzUALO:
             grant:
                 - ALL
             name: drupal8

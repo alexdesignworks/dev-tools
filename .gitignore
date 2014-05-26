@@ -18,6 +18,11 @@ codekit-config.json
 /.vagrant/
 
 #
+# Puppet ssh files.
+#
+/puphpet/files/dot/ssh/
+
+#
 # Downloaded Drupal projects.
 #
 !/drupal7/empty

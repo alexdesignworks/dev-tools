@@ -2,8 +2,9 @@
 
 if $server_values == undef {
   $server_values = hiera('server', false)
+} if $vm_values == undef {
+  $vm_values = hiera($::vm_target_key, false)
 }
-
 # Ensure the time is accurate, reducing the possibilities of apt repositories
 # failing for invalid certificates
 class { 'ntp': }
@@ -75,51 +76,32 @@ case $::osfamily {
       }
     }
 
-    exec { 'bash_git':
-      cwd     => "/home/${::ssh_username}",
-      command => "curl https://raw.github.com/git/git/master/contrib/completion/git-prompt.sh > /home/${::ssh_username}/.bash_git",
-      creates => "/home/${::ssh_username}/.bash_git"
-    }
-
-    exec { 'bash_git for root':
-      cwd     => '/root',
-      command => "cp /home/${::ssh_username}/.bash_git /root/.bash_git",
-      creates => '/root/.bash_git',
-      require => Exec['bash_git']
-    }
-
     file_line { 'link ~/.bash_git':
       ensure  => present,
       line    => 'if [ -f ~/.bash_git ] ; then source ~/.bash_git; fi',
       path    => "/home/${::ssh_username}/.bash_profile",
-      require => [
-        Exec['dotfiles'],
-        Exec['bash_git'],
-      ]
+      require => Exec['dotfiles'],
     }
 
     file_line { 'link ~/.bash_git for root':
       ensure  => present,
       line    => 'if [ -f ~/.bash_git ] ; then source ~/.bash_git; fi',
       path    => '/root/.bashrc',
-      require => [
-        Exec['dotfiles'],
-        Exec['bash_git'],
-      ]
+      require => Exec['dotfiles'],
     }
 
     file_line { 'link ~/.bash_aliases':
       ensure  => present,
       line    => 'if [ -f ~/.bash_aliases ] ; then source ~/.bash_aliases; fi',
       path    => "/home/${::ssh_username}/.bash_profile",
-      require => File_line['link ~/.bash_git']
+      require => Exec['dotfiles'],
     }
 
     file_line { 'link ~/.bash_aliases for root':
       ensure  => present,
       line    => 'if [ -f ~/.bash_aliases ] ; then source ~/.bash_aliases; fi',
       path    => '/root/.bashrc',
-      require => File_line['link ~/.bash_git for root']
+      require => Exec['dotfiles'],
     }
 
     ensure_packages( ['augeas'] )
@@ -170,15 +152,15 @@ case $::operatingsystem {
 
     if hash_key_equals($php_values, 'install', 1) {
       # Ubuntu Lucid 10.04, Precise 12.04, Quantal 12.10 and Raring 13.04 can do PHP 5.3 (default <= 12.10) and 5.4 (default <= 13.04)
-      if $lsbdistcodename in ['lucid', 'precise', 'quantal', 'raring'] and $php_values['version'] == '54' {
+      if $lsbdistcodename in ['lucid', 'precise', 'quantal', 'raring', 'trusty'] and $php_values['version'] == '54' {
         if $lsbdistcodename == 'lucid' {
           apt::ppa { 'ppa:ondrej/php5-oldstable': require => Apt::Key['4F4EA0AAE5267A6C'], options => '' }
         } else {
           apt::ppa { 'ppa:ondrej/php5-oldstable': require => Apt::Key['4F4EA0AAE5267A6C'] }
         }
       }
-      # Ubuntu Precise 12.04, Quantal 12.10 and Raring 13.04 can do PHP 5.5
-      elsif $lsbdistcodename in ['precise', 'quantal', 'raring'] and $php_values['version'] == '55' {
+      # Ubuntu 12.04/10, 13.04/10, 14.04 can do PHP 5.5
+      elsif $lsbdistcodename in ['precise', 'quantal', 'raring', 'saucy', 'trusty'] and $php_values['version'] == '55' {
         apt::ppa { 'ppa:ondrej/php5': require => Apt::Key['4F4EA0AAE5267A6C'] }
       }
       elsif $lsbdistcodename in ['lucid'] and $php_values['version'] == '55' {
@@ -216,6 +198,27 @@ define add_dotdeb ($release){
   }
 }
 
+# Begin open ports for Iptables
+if $::osfamily == 'redhat'
+  and has_key($vm_values, 'vm')
+  and has_key($vm_values['vm'], 'network')
+  and has_key($vm_values['vm']['network'], 'forwarded_port')
+{
+  create_resources( iptables_port, $vm_values['vm']['network']['forwarded_port'] )
+}
+
+define iptables_port (
+  $host,
+  $guest,
+) {
+  if ( ! defined(Iptables::Allow["tcp/${guest}"]) ) {
+    iptables::allow { "tcp/${guest}":
+      port     => $guest,
+      protocol => 'tcp'
+    }
+  }
+}
+
 ## Begin MailCatcher manifest
 
 if $mailcatcher_values == undef {
@@ -228,6 +231,12 @@ if hash_key_equals($mailcatcher_values, 'install', 1) {
       ensure   => '1.3',
       provider => 'gem',
       before   => Class['mailcatcher']
+    }
+  }
+
+  if $::operatingsystem == 'ubuntu' and $lsbdistcodename == 'trusty' {
+    package { 'rubygems':
+      ensure => absent,
     }
   }
 
@@ -271,7 +280,7 @@ if hash_key_equals($mailcatcher_values, 'install', 1) {
     priority    => '100',
     user        => 'mailcatcher',
     autostart   => true,
-    autorestart => true,
+    autorestart => 'true',
     environment => {
       'PATH' => "/bin:/sbin:/usr/bin:/usr/sbin:${mailcatcher_values['settings']['path']}"
     },
@@ -495,6 +504,17 @@ if hash_key_equals($nginx_values, 'install', 1) {
     }
   }
 
+  if $::osfamily == 'redhat' {
+      file { '/usr/share/nginx':
+        ensure  => directory,
+        mode    => 0775,
+        owner   => 'www-data',
+        group   => 'www-data',
+        require => Group['www-data'],
+        before  => Package['nginx']
+      }
+  }
+
   if hash_key_equals($php_values, 'install', 1) {
     $php5_fpm_sock = '/var/run/php5-fpm.sock'
 
@@ -514,9 +534,9 @@ if hash_key_equals($nginx_values, 'install', 1) {
 
     if $::osfamily == 'redhat' and $fastcgi_pass == "unix:${php5_fpm_sock}" {
       exec { "create ${php5_fpm_sock} file":
-        command => "touch ${php5_fpm_sock} && chmod 777 ${php5_fpm_sock}",
+        command => "touch ${php5_fpm_sock}",
         onlyif  => ["test ! -f ${php5_fpm_sock}", "test ! -f ${php5_fpm_sock}="],
-        require => Package['nginx']
+        require => Package['nginx'],
       }
 
       exec { "listen = 127.0.0.1:9000 => listen = ${php5_fpm_sock}":
@@ -528,12 +548,25 @@ if hash_key_equals($nginx_values, 'install', 1) {
         ],
         require => Exec["create ${php5_fpm_sock} file"]
       }
+
+      set_php5_fpm_sock_group_and_user { 'php_rhel':
+        require => Exec["create ${php5_fpm_sock} file"],
+      }
+    } else {
+      set_php5_fpm_sock_group_and_user { 'php':
+        require   => Package['nginx'],
+        subscribe => Service['php5-fpm'],
+      }
     }
   } elsif hash_key_equals($hhvm_values, 'install', 1) {
     $fastcgi_pass        = '127.0.0.1:9000'
     $fastcgi_param_parts = [
       'SCRIPT_FILENAME $document_root$fastcgi_script_name'
     ]
+
+    set_php5_fpm_sock_group_and_user { 'hhvm':
+      require => Package['nginx'],
+    }
   } else {
     $fastcgi_pass        = ''
     $fastcgi_param_parts = []
@@ -611,6 +644,13 @@ define nginx_vhost (
       'include'                 => 'fastcgi_params'
     },
     notify              => Class['nginx::service'],
+  }
+}
+
+define set_php5_fpm_sock_group_and_user (){
+  exec { 'set php5_fpm_sock group and user':
+    command => "chmod 660 ${php5_fpm_sock} && chown www-data ${php5_fpm_sock} && chgrp www-data ${php5_fpm_sock} && touch /.puphpet-stuff/php5_fpm_sock",
+    creates => '/.puphpet-stuff/php5_fpm_sock',
   }
 }
 
@@ -724,15 +764,14 @@ if hash_key_equals($php_values, 'install', 1) {
     }
 
     if $php_values['ini']['session.save_path'] != undef {
-      exec {"mkdir -p ${php_values['ini']['session.save_path']}":
-        onlyif  => "test ! -d ${php_values['ini']['session.save_path']}",
-      }
+      $php_sess_save_path = $php_values['ini']['session.save_path']
 
-      file { $php_values['ini']['session.save_path']:
-        ensure  => directory,
-        group   => 'www-data',
-        mode    => 0775,
-        require => Exec["mkdir -p ${php_values['ini']['session.save_path']}"]
+      exec {"mkdir -p ${php_sess_save_path}":
+        onlyif => "test ! -d ${php_sess_save_path}",
+        before => Class['php']
+      }
+      exec {"chmod 775 ${php_sess_save_path} && chown www-data ${php_sess_save_path} && chgrp www-data ${php_sess_save_path}":
+        require => Class['php']
       }
     }
   }
@@ -774,11 +813,8 @@ define php_pear_mod {
   }
 }
 define php_pecl_mod {
-  if ! defined(Php::Pecl::Module[$name]) {
-    php::pecl::module { $name:
-      use_package         => false,
-      service_autorestart => $php_webserver_restart,
-    }
+  puphpet::php::pecl { $name:
+    service_autorestart => $php_webserver_restart,
   }
 }
 
@@ -821,53 +857,6 @@ if hash_key_equals($xdebug_values, 'install', 1)
   }
 }
 
-## Begin Xhprof manifest
-
-if $php_values == undef {
-  $php_values = hiera('php', false)
-} if $xhprof_values == undef {
-  $xhprof_values = hiera('xhprof', false)
-} if $apache_values == undef {
-  $apache_values = hiera('apache', false)
-} if $nginx_values == undef {
-  $nginx_values = hiera('nginx', false)
-}
-
-if hash_key_equals($xhprof_values, 'install', 1)
-  and hash_key_equals($php_values, 'install', 1)
-{
-  if $::operatingsystem == 'ubuntu' {
-    apt::key { '8D0DC64F':
-      key_server => 'hkp://keyserver.ubuntu.com:80'
-    }
-
-    apt::ppa { 'ppa:brianmercer/php5-xhprof': require => Apt::Key['8D0DC64F'] }
-  }
-
-  if hash_key_equals($apache_values, 'install', 1) {
-    $xhprof_webroot_location = $puphpet::params::apache_webroot_location
-    $xhprof_webserver_service = 'httpd'
-  } elsif hash_key_equals($nginx_values, 'install', 1) {
-    $xhprof_webroot_location = $puphpet::params::nginx_webroot_location
-    $xhprof_webserver_service = 'nginx'
-  } else {
-    $xhprof_webroot_location = $xhprof_values['location']
-    $xhprof_webserver_service = undef
-  }
-
-  if ! defined(Package['graphviz']) {
-    package { 'graphviz':
-      ensure  => present,
-    }
-  }
-
-  class { 'puphpet::xhprof':
-    php_version       => $php_values['version'],
-    webroot_location  => $xhprof_webroot_location,
-    webserver_service => $xhprof_webserver_service
-  }
-}
-
 ## Begin Drush manifest
 
 if $drush_values == undef {
@@ -896,11 +885,28 @@ if $mysql_values == undef {
   $nginx_values = hiera('nginx', false)
 }
 
+include 'mysql::params'
+
 if hash_key_equals($mysql_values, 'install', 1) {
   if hash_key_equals($apache_values, 'install', 1) or hash_key_equals($nginx_values, 'install', 1) {
     $mysql_webserver_restart = true
   } else {
     $mysql_webserver_restart = false
+  }
+
+  if $::osfamily == 'redhat' {
+    exec { 'mysql-community-repo':
+      command => 'yum -y --nogpgcheck install "http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm" && touch /.puphpet-stuff/mysql-community-release',
+      creates => '/.puphpet-stuff/mysql-community-release'
+    }
+
+    $mysql_server_require             = Exec['mysql-community-repo']
+    $mysql_server_server_package_name = 'mysql-community-server'
+    $mysql_server_client_package_name = 'mysql-community-client'
+  } else {
+    $mysql_server_require             = []
+    $mysql_server_server_package_name = $mysql::params::server_package_name
+    $mysql_server_client_package_name = $mysql::params::client_package_name
   }
 
   if hash_key_equals($php_values, 'install', 1) {
@@ -915,7 +921,14 @@ if hash_key_equals($mysql_values, 'install', 1) {
 
   if $mysql_values['root_password'] {
     class { 'mysql::server':
+      package_name  => $mysql_server_server_package_name,
       root_password => $mysql_values['root_password'],
+      require       => $mysql_server_require
+    }
+
+    class { 'mysql::client':
+      package_name => $mysql_server_client_package_name,
+      require      => $mysql_server_require
     }
 
     if is_hash($mysql_values['databases']) and count($mysql_values['databases']) > 0 {
