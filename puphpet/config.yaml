@@ -33,13 +33,13 @@ vagrantfile-local:
                     - '--parser future'
         synced_folder:
             umcFb7AF9Z9o:
-                source: /www/drupal-dev/drupal7
+                source: drupal7
                 target: /var/www/drupal7
                 sync_type: nfs
                 rsync:
                     auto: 'false'
             bzlyuQf3NbvC:
-                source: /www/drupal-dev/drupal8
+                source: drupal8
                 target: /var/www/drupal8
                 sync_type: nfs
                 rsync:
