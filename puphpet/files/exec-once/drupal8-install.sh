@@ -32,7 +32,7 @@ DRUPAL_USER_PASSWORD=password
 DRUPAL_USER_MAIL=admin@example.com
 
 # Drupal release to use: drupal, drupal-7.x etc.
-DRUPAL_RELEASE=drupal-8.x
+DRUPAL_RELEASE=drupal-8.0.x
 
 # Start installation.
 echo '****** DRUPAL 8 INSTALLATION ******'
