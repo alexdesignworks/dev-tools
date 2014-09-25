@@ -72,7 +72,7 @@ FAQ
 
 Links
 -----
-* [Virtaul Box](https://www.virtualbox.org/)
+* [Virtual Box](https://www.virtualbox.org/)
 * [Vagrant](http://www.vagrantup.com/)
 * [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager)
 * [PuPHPet](https://puphpet.com/)
