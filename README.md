@@ -49,7 +49,7 @@ What else is there?
 
 Installation
 ------------
-1. Install [Virtaul Box](https://www.virtualbox.org/)
+1. Install [Virtual Box](https://www.virtualbox.org/)
 2. Install [Vagrant](http://www.vagrantup.com/)
 3. Install [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager)
 4. Some OSes require NFS server to be installed. OSX has NFS server inbuilt and running by default.
@@ -72,7 +72,7 @@ FAQ
 
 Links
 -----
-* [Virtaul Box](https://www.virtualbox.org/)
+* [Virtual Box](https://www.virtualbox.org/)
 * [Vagrant](http://www.vagrantup.com/)
 * [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager)
 * [PuPHPet](https://puphpet.com/)
