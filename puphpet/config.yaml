@@ -1,8 +1,8 @@
 ---
 vagrantfile-local:
     vm:
-        box: ubuntu-precise12042-x64-vbox43
-        box_url: puphpet/debian75-x64
+        box: puphpet/ubuntu1204-x64
+        box_url: puphpet/ubuntu1204-x64
         memory: '2048'
         hostname: drupal-dev.local
         chosen_provider: virtualbox
