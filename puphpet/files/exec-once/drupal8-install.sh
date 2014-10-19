@@ -32,7 +32,7 @@ DRUPAL_USER_PASSWORD=password
 DRUPAL_USER_MAIL=admin@example.com
 
 # Drupal release to use: drupal, drupal-7.x etc.
-DRUPAL_RELEASE=drupal-8.0.x
+DRUPAL_RELEASE=drupal-8
 
 # Start installation.
 echo '****** DRUPAL 8 INSTALLATION ******'
@@ -52,11 +52,8 @@ drush dl --destination="`dirname ${DRUPAL_DIR}`" --drupal-project-rename="`basen
 # Install Drupal.
 drush --root=${DRUPAL_DIR} --uri=http://${DRUPAL_URI} site-install standard --db-url=mysql://${DRUPAL_MYSQL_USER}:${DRUPAL_MYSQL_PASSWORD}@localhost/${DRUPAL_MYSQL_DB} --account-name=${DRUPAL_USER_NAME} --account-pass=${DRUPAL_USER_PASSWORD} --account-mail=${DRUPAL_USER_MAIL} --site-mail=${DRUPAL_USER_MAIL} --site-name=${DRUPAL_NAME} -y install_configure_form.update_status_module='array(FALSE,FALSE)'
 
-# Create sites/default/files directory.
-mkdir ${DRUPAL_DIR}/sites/default/files
-
 # Change permissions for files directory.
 sudo sh -c "chown -R ${WEB_USER}:${WEB_GROUP} ${DRUPAL_DIR}/sites/default/files; chmod g+s ${DRUPAL_DIR}/sites/default/files"
- 
+
 # Show information about installed Drupal.
 drush status --root=${DRUPAL_DIR}
