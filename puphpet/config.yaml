@@ -3,21 +3,21 @@ vagrantfile-local:
     vm:
         box: puphpet/ubuntu1204-x64
         box_url: puphpet/ubuntu1204-x64
-        memory: '2048'
         hostname: drupal-dev.local
+        memory: '1024'
+        cpus: '1'
         chosen_provider: virtualbox
         network:
             private_network: 172.16.10.10
             forwarded_port:
-                WDjb3QgpfP4u:
+                K0fIa0HS2Uty:
                     host: '8754'
                     guest: '22'
+        post_up_message: ''
         provider:
             virtualbox:
                 modifyvm:
                     natdnshostresolver1: on
-                setextradata:
-                    VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root: 1
             vmware:
                 numvcpus: 1
             parallels:
@@ -25,26 +25,32 @@ vagrantfile-local:
         provision:
             puppet:
                 manifests_path: puphpet/puppet
-                manifest_file: manifest.pp
+                manifest_file: site.pp
                 module_path: puphpet/puppet/modules
                 options:
                     - '--verbose'
                     - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
                     - '--parser future'
         synced_folder:
-            umcFb7AF9Z9o:
+            8enEGMD1YKl0:
+                owner: ''
+                group: ''
                 source: drupal7
                 target: /var/www/drupal7
                 sync_type: nfs
                 rsync:
                     auto: 'false'
-            bzlyuQf3NbvC:
+            1SANt2R5xusy:
+                owner: ''
+                group: ''
                 source: drupal8
                 target: /var/www/drupal8
                 sync_type: nfs
                 rsync:
                     auto: 'false'
-        usable_port_range: 2200..2250
+        usable_port_range:
+            start: 10200
+            stop: 10500
     ssh:
         host: null
         port: null
@@ -58,6 +64,7 @@ vagrantfile-local:
     vagrant:
         host: detect
 server:
+    install: '1'
     packages:
         - ruby
         - php-apc
@@ -65,22 +72,18 @@ server:
         - memcached
         - php5-curl
         - vim
-    dot_files:
-        -
-            bash_aliases: null
-    _prevent_empty: ''
-mailcatcher:
-    install: 0
-    settings:
-        smtp_ip: 0.0.0.0
-        smtp_port: 1025
-        http_ip: 0.0.0.0
-        http_port: '1080'
-        mailcatcher_path: /usr/local/bin
-        log_path: /var/log/mailcatcher/mailcatcher.log
+        - htop
+        - nodejs
+users_groups:
+    install: '1'
+    groups: {  }
+    users: {  }
+cron:
+    install: '1'
+    jobs: {  }
 firewall:
     install: '1'
-    rules: null
+    rules: {  }
 apache:
     install: '1'
     settings:
@@ -91,52 +94,85 @@ apache:
         manage_group: false
         sendfile: 0
     modules:
-        - php
         - rewrite
     vhosts:
-        n06BO0eaNzH7:
+        n9ky3prb4rzc:
             servername: drupal7.local
             docroot: /var/www/drupal7
             port: '80'
             setenv:
                 - 'APP_ENV dev'
-            override:
-                - All
+            directories:
+                48urvhdzkgsa:
+                    provider: directory
+                    path: /var/www/drupal7
+                    options:
+                        - Indexes
+                        - FollowSymlinks
+                        - MultiViews
+                    allow_override:
+                        - All
+                    require:
+                        - all
+                        - granted
+                    custom_fragment: ''
+            engine: php
             custom_fragment: ''
             ssl_cert: ''
             ssl_key: ''
             ssl_chain: ''
             ssl_certs_dir: ''
-        HPLuMjwkX2Yr:
+        w1ctezhvcqjv:
             servername: drupal8.local
             docroot: /var/www/drupal8
             port: '80'
             setenv:
                 - 'APP_ENV dev'
-            override:
-                - All
+            directories:
+                oeo8kvg9beeu:
+                    provider: directory
+                    path: /var/www/drupal8
+                    options:
+                        - Indexes
+                        - FollowSymlinks
+                        - MultiViews
+                    allow_override:
+                        - All
+                    require:
+                        - all
+                        - granted
+                    custom_fragment: ''
+            engine: php
             custom_fragment: ''
             ssl_cert: ''
             ssl_key: ''
             ssl_chain: ''
             ssl_certs_dir: ''
     mod_pagespeed: 0
-    mod_spdy: 0
 nginx:
-    install: 0
+    install: '0'
+    settings:
+        default_vhost: 1
+        proxy_buffer_size: 128k
+        proxy_buffers: '4 256k'
+    upstreams: {  }
     vhosts:
-        Nx4NvQcFlDyg:
+        4fbaxsn0xrjs:
+            proxy: ''
             server_name: awesome.dev
             server_aliases:
                 - www.awesome.dev
             www_root: /var/www/awesome.dev
             listen_port: '80'
+            location: .php$
             index_files:
                 - index.html
                 - index.htm
                 - index.php
             envvars:
                 - 'APP_ENV dev'
+            engine: ''
+            client_max_body_size: 1m
             ssl_cert: ''
             ssl_key: ''
 php:
@@ -152,6 +188,7 @@ php:
             - intl
             - mcrypt
             - memcached
+            - imagick
         pear:
             - PHP_CodeSniffer
             - console_table
@@ -162,6 +199,17 @@ php:
         error_reporting: '-1'
         session.save_path: /var/lib/php/session
     timezone: Australia/Melbourne
+    mod_php: '1'
+hhvm:
+    install: '0'
+    nightly: 0
+    composer: '1'
+    composer_home: ''
+    settings:
+        host: '0'
+        port: '0'
+    ini: {  }
+    timezone: null
 xdebug:
     install: '1'
     settings:
@@ -172,16 +220,32 @@ xdebug:
         xdebug.remote_handler: dbgp
         xdebug.remote_port: '9000'
         xdebug.max_nesting_level: '1000'
+xhprof:
+    install: '0'
+wpcli:
+    install: '0'
+    version: ''
 drush:
     install: '1'
-    settings:
-        drush.tag_branch: master
+    version: 6.3.0
+ruby:
+    install: '1'
+    versions: {  }
+nodejs:
+    install: '0'
+    npm_packages: {  }
+python:
+    install: '1'
+    packages: {  }
+    versions: {  }
 mysql:
     install: '1'
-    root_password: root
+    settings:
+        override_options: {  }
+        root_password: password
     adminer: 0
     databases:
-        2sIaIkYF1rzJ:
+        cMU8w2zCKVD3:
             grant:
                 - ALL
             name: drupal7
@@ -189,7 +253,7 @@ mysql:
             user: admin
             password: password
             sql_file: ''
-        x7ABSiIOjto6:
+        wNCBLaco2uHO:
             grant:
                 - ALL
             name: drupal8
@@ -198,7 +262,7 @@ mysql:
             password: password
             sql_file: ''
 postgresql:
-    install: 0
+    install: '0'
     settings:
         root_password: '123'
         user_group: postgres
@@ -207,23 +271,37 @@ postgresql:
     databases: {  }
     adminer: 0
 mariadb:
-    install: 0
-    root_password: '123'
+    install: '0'
+    settings:
+        override_options: {  }
+        root_password: '123'
     adminer: 0
     databases: {  }
-    version: '10.0'
+sqlite:
+    install: '0'
+    adminer: 0
+    databases: {  }
 mongodb:
-    install: 0
+    install: '0'
     settings:
         auth: 1
         port: '27017'
     databases: {  }
 redis:
-    install: 0
+    install: '0'
     settings:
         conf_port: '6379'
+mailcatcher:
+    install: '0'
+    settings:
+        smtp_ip: 0.0.0.0
+        smtp_port: 1025
+        http_ip: 0.0.0.0
+        http_port: '1080'
+        mailcatcher_path: /usr/local/rvm/wrappers/default
+        from_email_method: inline
 beanstalkd:
-    install: 0
+    install: '0'
     settings:
         listenaddress: 0.0.0.0
         listenport: '13000'
@@ -235,7 +313,17 @@ beanstalkd:
     beanstalk_console: 0
     binlogdir: /var/lib/beanstalkd/binlog
 rabbitmq:
-    install: 0
+    install: '0'
     settings:
         port: '5672'
+elastic_search:
+    install: '0'
+    settings:
+        version: null
+        java_install: true
+solr:
+    install: '0'
+    settings:
+        version: ''
+        port: ''
 
