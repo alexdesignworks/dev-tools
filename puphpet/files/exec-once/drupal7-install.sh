@@ -57,6 +57,9 @@ mkdir ${DRUPAL_DIR}/sites/default/files
 
 # Change permissions for files directory.
 sudo sh -c "chown -R ${WEB_USER}:${WEB_GROUP} ${DRUPAL_DIR}/sites/default/files; chmod g+s ${DRUPAL_DIR}/sites/default/files"
- 
+
 # Show information about installed Drupal.
 drush status --root=${DRUPAL_DIR}
+
+echo
+echo
