@@ -261,7 +261,7 @@ wpcli:
     version: ''
 drush:
     install: '1'
-    version: 6.3.0
+    version: 7.0.0-alpha9
 ruby:
     install: '1'
     versions: {  }
