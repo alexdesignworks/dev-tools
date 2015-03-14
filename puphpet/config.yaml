@@ -33,16 +33,16 @@ vagrantfile-local:
                     - '--parser future'
         synced_folder:
             8enEGMD1YKl0:
-                owner: ''
-                group: ''
+                owner: www-data
+                group: www-data
                 source: drupal7
                 target: /var/www/drupal7
                 sync_type: nfs
                 rsync:
                     auto: 'false'
             1SANt2R5xusy:
-                owner: ''
-                group: ''
+                owner: www-data
+                group: www-data
                 source: drupal8
                 target: /var/www/drupal8
                 sync_type: nfs
