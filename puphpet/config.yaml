@@ -48,6 +48,14 @@ vagrantfile-local:
                 sync_type: nfs
                 rsync:
                     auto: 'false'
+            ditQrvOX7QLJ:
+                owner: www-data
+                group: www-data
+                source: app
+                target: /var/www/app
+                sync_type: nfs
+                rsync:
+                    auto: 'false'
         usable_port_range:
             start: 10200
             stop: 10500
@@ -132,6 +140,32 @@ apache:
                 oeo8kvg9beeu:
                     provider: directory
                     path: /var/www/drupal8
+                    options:
+                        - Indexes
+                        - FollowSymlinks
+                        - MultiViews
+                    allow_override:
+                        - All
+                    require:
+                        - all
+                        - granted
+                    custom_fragment: ''
+            engine: php
+            custom_fragment: ''
+            ssl_cert: ''
+            ssl_key: ''
+            ssl_chain: ''
+            ssl_certs_dir: ''
+        e0kfaebmqcdj:
+            servername: app.local
+            docroot: /var/www/app
+            port: '80'
+            setenv:
+                - 'APP_ENV dev'
+            directories:
+                hz3usleehvpy:
+                    provider: directory
+                    path: ''
                     options:
                         - Indexes
                         - FollowSymlinks
@@ -261,6 +295,14 @@ mysql:
             user: admin
             password: password
             sql_file: ''
+        oAbrUmsWwnGZ:
+            grant:
+                - ALL
+            name: app
+            host: localhost
+            user: admin
+            password: password
+            sql_file: app.sql
 postgresql:
     install: '0'
     settings:
