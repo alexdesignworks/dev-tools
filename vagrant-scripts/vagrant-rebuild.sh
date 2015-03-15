@@ -108,9 +108,7 @@ else
     # Clear cache (Drupal version-agnostic).
     drush_cache_clear && \
     # Run DB updates.
-    $DRUSH updb -y && \
-    # Disable maintenance mode.
-    $DRUSH vset maintenance_mode 0 \
+    $DRUSH updb -y \
   "
 
   # SSH into vagrant box.
