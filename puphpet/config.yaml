@@ -1,23 +1,24 @@
----
-vagrantfile-local:
+vagrantfile:
+    target: local
     vm:
-        box: puphpet/ubuntu1204-x64
-        box_url: puphpet/ubuntu1204-x64
+        box: puphpet/ubuntu1404-x64
+        box_url: puphpet/ubuntu1404-x64
         hostname: drupal-dev.local
-        memory: '1024'
+        memory: '512'
         cpus: '1'
         chosen_provider: virtualbox
         network:
-            private_network: 172.16.10.10
+            private_network: 192.168.56.101
             forwarded_port:
-                K0fIa0HS2Uty:
-                    host: '8754'
+                vflnp_ugs30l4bdiu3:
+                    host: '8759'
                     guest: '22'
         post_up_message: ''
         provider:
             virtualbox:
                 modifyvm:
                     natdnshostresolver1: on
+                showgui: '0'
             vmware:
                 numvcpus: 1
             parallels:
@@ -32,30 +33,63 @@ vagrantfile-local:
                     - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
                     - '--parser future'
         synced_folder:
-            8enEGMD1YKl0:
-                owner: www-data
-                group: www-data
-                source: drupal7
-                target: /var/www/drupal7
-                sync_type: nfs
-                rsync:
-                    auto: 'false'
-            1SANt2R5xusy:
-                owner: www-data
-                group: www-data
-                source: drupal8
-                target: /var/www/drupal8
-                sync_type: nfs
-                rsync:
-                    auto: 'false'
-            ditQrvOX7QLJ:
-                owner: www-data
-                group: www-data
+            vflsf_msfxe2hwexbg:
                 source: app
                 target: /var/www/app
                 sync_type: nfs
+                smb:
+                    smb_host: ''
+                    smb_username: ''
+                    smb_password: ''
                 rsync:
-                    auto: 'false'
+                    args:
+                        - '--verbose'
+                        - '--archive'
+                        - '-z'
+                    exclude:
+                        - .vagrant/
+                        - .git/
+                    auto: 'true'
+                owner: www-data
+                group: www-data
+            vflsf_ly9sjznro79o:
+                source: drupal7
+                target: /var/www/drupal7
+                sync_type: nfs
+                smb:
+                    smb_host: ''
+                    smb_username: ''
+                    smb_password: ''
+                rsync:
+                    args:
+                        - '--verbose'
+                        - '--archive'
+                        - '-z'
+                    exclude:
+                        - .vagrant/
+                        - .git/
+                    auto: 'true'
+                owner: www-data
+                group: www-data
+            vflsf_l40ht5ugy0gv:
+                source: drupal8
+                target: /var/www/drupal8
+                sync_type: nfs
+                smb:
+                    smb_host: ''
+                    smb_username: ''
+                    smb_password: ''
+                rsync:
+                    args:
+                        - '--verbose'
+                        - '--archive'
+                        - '-z'
+                    exclude:
+                        - .vagrant/
+                        - .git/
+                    auto: 'true'
+                owner: www-data
+                group: www-data
         usable_port_range:
             start: 10200
             stop: 10500
@@ -75,114 +109,23 @@ server:
     install: '1'
     packages:
         - ruby
+        - htop
         - php-apc
         - php5-memcache
         - memcached
         - php5-curl
         - vim
-        - htop
         - nodejs
 users_groups:
     install: '1'
     groups: {  }
     users: {  }
-cron:
-    install: '1'
-    jobs: {  }
 firewall:
     install: '1'
     rules: {  }
-apache:
+cron:
     install: '1'
-    settings:
-        user: www-data
-        group: www-data
-        default_vhost: true
-        manage_user: false
-        manage_group: false
-        sendfile: 0
-    modules:
-        - rewrite
-    vhosts:
-        n9ky3prb4rzc:
-            servername: drupal7.local
-            docroot: /var/www/drupal7
-            port: '80'
-            setenv:
-                - 'APP_ENV dev'
-            directories:
-                48urvhdzkgsa:
-                    provider: directory
-                    path: /var/www/drupal7
-                    options:
-                        - Indexes
-                        - FollowSymlinks
-                        - MultiViews
-                    allow_override:
-                        - All
-                    require:
-                        - all
-                        - granted
-                    custom_fragment: ''
-            engine: php
-            custom_fragment: ''
-            ssl_cert: ''
-            ssl_key: ''
-            ssl_chain: ''
-            ssl_certs_dir: ''
-        w1ctezhvcqjv:
-            servername: drupal8.local
-            docroot: /var/www/drupal8
-            port: '80'
-            setenv:
-                - 'APP_ENV dev'
-            directories:
-                oeo8kvg9beeu:
-                    provider: directory
-                    path: /var/www/drupal8
-                    options:
-                        - Indexes
-                        - FollowSymlinks
-                        - MultiViews
-                    allow_override:
-                        - All
-                    require:
-                        - all
-                        - granted
-                    custom_fragment: ''
-            engine: php
-            custom_fragment: ''
-            ssl_cert: ''
-            ssl_key: ''
-            ssl_chain: ''
-            ssl_certs_dir: ''
-        e0kfaebmqcdj:
-            servername: app.local
-            docroot: /var/www/app
-            port: '80'
-            setenv:
-                - 'APP_ENV dev'
-            directories:
-                hz3usleehvpy:
-                    provider: directory
-                    path: ''
-                    options:
-                        - Indexes
-                        - FollowSymlinks
-                        - MultiViews
-                    allow_override:
-                        - All
-                    require:
-                        - all
-                        - granted
-                    custom_fragment: ''
-            engine: php
-            custom_fragment: ''
-            ssl_cert: ''
-            ssl_key: ''
-            ssl_chain: ''
-            ssl_certs_dir: ''
-    mod_pagespeed: 0
+    jobs: {  }
 nginx:
     install: '0'
     settings:
@@ -191,36 +134,173 @@ nginx:
         proxy_buffers: '4 256k'
     upstreams: {  }
     vhosts:
-        4fbaxsn0xrjs:
-            proxy: ''
+        nxv_oi3ed77sw9l1:
             server_name: awesome.dev
             server_aliases:
                 - www.awesome.dev
-            www_root: /var/www/awesome.dev
+            www_root: /var/www/awesome
             listen_port: '80'
-            location: .php$
             index_files:
                 - index.html
                 - index.htm
                 - index.php
-            envvars:
-                - 'APP_ENV dev'
-            engine: ''
             client_max_body_size: 1m
+            ssl: '0'
             ssl_cert: ''
             ssl_key: ''
+            ssl_port: '443'
+            ssl_protocols: ''
+            ssl_ciphers: ''
+            rewrite_to_https: '1'
+            spdy: '1'
+            locations:
+                nxvl_aatn5xl1l4ia:
+                    location: /
+                    autoindex: off
+                    try_files:
+                        - $uri
+                        - $uri/
+                        - /index.php$is_args$args
+                    fastcgi: ''
+                    fastcgi_index: ''
+                    fastcgi_split_path: ''
+                nxvl_gzmx9t4h8k59:
+                    location: '~ \.php$'
+                    autoindex: off
+                    try_files:
+                        - $uri
+                        - $uri/
+                        - /index.php$is_args$args
+                    fastcgi: '127.0.0.1:9000'
+                    fastcgi_index: index.php
+                    fastcgi_split_path: '^(.+\.php)(/.*)$'
+                    fast_cgi_params_extra:
+                        - 'SCRIPT_FILENAME $request_filename'
+                        - 'APP_ENV dev'
+    proxies: {  }
+apache:
+    install: '1'
+    settings:
+        user: www-data
+        group: www-data
+        default_vhost: false
+        manage_user: false
+        manage_group: false
+        sendfile: 0
+    modules:
+        - proxy_fcgi
+        - rewrite
+    vhosts:
+        av_xush8zvemkpc:
+            servername: app.local
+            docroot: /var/www/app
+            port: '80'
+            setenv:
+                - 'APP_ENV dev'
+            custom_fragment: ''
+            ssl: '0'
+            ssl_cert: ''
+            ssl_key: ''
+            ssl_chain: ''
+            ssl_certs_dir: ''
+            ssl_protocol: ''
+            ssl_cipher: ''
+            directories:
+                avd_5z2ilv6633sb:
+                    path: /var/www/app
+                    options:
+                        - Indexes
+                        - FollowSymlinks
+                        - MultiViews
+                    allow_override:
+                        - All
+                    require:
+                        - 'all granted'
+                    custom_fragment: ''
+                    files_match:
+                        avdfm_lzpjnhhhl1wa:
+                            path: \.php$
+                            sethandler: 'proxy:fcgi://127.0.0.1:9000'
+                            custom_fragment: ''
+                            provider: filesmatch
+                    provider: directory
+        av_n391u1fri3x7:
+            servername: drupal7.local
+            docroot: /var/www/drupal7
+            port: '80'
+            setenv:
+                - 'APP_ENV dev'
+            custom_fragment: ''
+            ssl: '0'
+            ssl_cert: ''
+            ssl_key: ''
+            ssl_chain: ''
+            ssl_certs_dir: ''
+            ssl_protocol: ''
+            ssl_cipher: ''
+            directories:
+                avd_g7w4cg5kig94:
+                    path: /var/www/drupal7
+                    options:
+                        - Indexes
+                        - FollowSymlinks
+                        - MultiViews
+                    allow_override:
+                        - All
+                    require:
+                        - 'all granted'
+                    custom_fragment: ''
+                    files_match:
+                        avdfm_xrsahykdua9h:
+                            path: \.php$
+                            sethandler: 'proxy:fcgi://127.0.0.1:9000'
+                            custom_fragment: ''
+                            provider: filesmatch
+                    provider: directory
+        av_x0slwdd2e4m4:
+            servername: drupal8.local
+            docroot: /var/www/drupal8
+            port: '80'
+            setenv:
+                - 'APP_ENV dev'
+            custom_fragment: ''
+            ssl: '0'
+            ssl_cert: ''
+            ssl_key: ''
+            ssl_chain: ''
+            ssl_certs_dir: ''
+            ssl_protocol: ''
+            ssl_cipher: ''
+            directories:
+                avd_c3na0czo4bu3:
+                    path: /var/www/drupal8
+                    options:
+                        - Indexes
+                        - FollowSymlinks
+                        - MultiViews
+                    allow_override:
+                        - All
+                    require:
+                        - 'all granted'
+                    custom_fragment: ''
+                    files_match:
+                        avdfm_qq9ja66uxxjh:
+                            path: \.php$
+                            sethandler: 'proxy:fcgi://127.0.0.1:9000'
+                            custom_fragment: ''
+                            provider: filesmatch
+                    provider: directory
 php:
     install: '1'
-    version: '54'
-    composer: '1'
-    composer_home: ''
+    settings:
+        version: '56'
     modules:
         php:
             - cli
-            - curl
-            - gd
             - intl
             - mcrypt
+            - gd
+            - curl
             - memcached
             - imagick
         pear:
@@ -232,109 +312,131 @@ php:
         display_errors: On
         error_reporting: '-1'
         session.save_path: /var/lib/php/session
-    timezone: Australia/Melbourne
-    mod_php: '1'
-hhvm:
-    install: '0'
-    nightly: 0
+        date.timezone: UTC
+    fpm_ini:
+        error_log: /var/log/php-fpm.log
+    fpm_pools:
+        phpfp_90oot1i3r5z8:
+            ini:
+                prefix: www
+                listen: '127.0.0.1:9000'
+                security.limit_extensions: .php
+                user: www-user
+                group: www-data
     composer: '1'
     composer_home: ''
-    settings:
-        host: '0'
-        port: '0'
-    ini: {  }
-    timezone: null
 xdebug:
     install: '1'
     settings:
-        xdebug.default_enable: '0'
+        xdebug.default_enable: '1'
         xdebug.remote_autostart: '0'
         xdebug.remote_connect_back: '1'
         xdebug.remote_enable: '1'
         xdebug.remote_handler: dbgp
         xdebug.remote_port: '9000'
-        xdebug.max_nesting_level: '1000'
+blackfire:
+    install: '0'
+    settings:
+        server_id: ''
+        server_token: ''
+        agent:
+            http_proxy: ''
+            https_proxy: ''
+            log_file: stderr
+            log_level: '1'
+        php:
+            agent_timeout: '0.25'
+            log_file: ''
+            log_level: '1'
 xhprof:
     install: '0'
 wpcli:
     install: '0'
-    version: ''
+    version: v0.19.0
 drush:
     install: '1'
-    version: 7.0.0-alpha9
+    version: 7.0.0-alpha3
 ruby:
     install: '1'
     versions: {  }
-nodejs:
-    install: '0'
-    npm_packages: {  }
 python:
     install: '1'
     packages: {  }
     versions: {  }
+nodejs:
+    install: '0'
+    npm_packages: {  }
+hhvm:
+    install: '0'
+    nightly: 0
+    composer: '1'
+    composer_home: ''
+    settings: {  }
+    server_ini:
+        hhvm.server.host: 127.0.0.1
+        hhvm.server.port: '9000'
+        hhvm.log.use_log_file: '1'
+        hhvm.log.file: /var/log/hhvm/error.log
+    php_ini:
+        display_errors: On
+        error_reporting: '-1'
+        date.timezone: UTC
 mysql:
     install: '1'
     settings:
-        override_options: {  }
+        version: '5.6'
         root_password: password
+        override_options: {  }
     adminer: 0
+    users:
+        mysqlnu_9arvrk72ihqb:
+            name: admin
+            password: password
     databases:
-        cMU8w2zCKVD3:
-            grant:
-                - ALL
-            name: drupal7
-            host: localhost
-            user: admin
-            password: password
-            sql_file: ''
-        wNCBLaco2uHO:
-            grant:
-                - ALL
-            name: drupal8
-            host: localhost
-            user: admin
-            password: password
-            sql_file: ''
-        oAbrUmsWwnGZ:
-            grant:
-                - ALL
+        mysqlnd_rjlfagk6pl4x:
             name: app
-            host: localhost
+            sql: ''
+        mysqlnd_fxjv16n57rs6:
+            name: drupal7
+            sql: ''
+        mysqlnd_kh4c8raxiu1l:
+            name: drupal8
+            sql: ''
+    grants:
+        mysqlng_n2keimxx2gpz:
             user: admin
-            password: password
-            sql_file: app.sql
+            table: '*.*'
+            privileges:
+                - ALL
 postgresql:
     install: '0'
     settings:
-        root_password: '123'
-        user_group: postgres
-        encoding: UTF8
-        version: '9.3'
+        global:
+            encoding: UTF8
+            version: '9.3'
+        server:
+            postgres_password: '123'
     databases: {  }
+    users: {  }
+    grants: {  }
     adminer: 0
-mariadb:
-    install: '0'
-    settings:
-        override_options: {  }
-        root_password: '123'
-    adminer: 0
-    databases: {  }
-sqlite:
-    install: '0'
-    adminer: 0
-    databases: {  }
 mongodb:
     install: '0'
     settings:
         auth: 1
+        bind_ip: 127.0.0.1
         port: '27017'
     databases: {  }
 redis:
     install: '0'
     settings:
         conf_port: '6379'
-mailcatcher:
+sqlite:
     install: '0'
+    adminer: 0
+    databases: {  }
+mailcatcher:
+    install: '1'
     settings:
         smtp_ip: 0.0.0.0
         smtp_port: 1025
@@ -358,14 +460,17 @@ rabbitmq:
     install: '0'
     settings:
         port: '5672'
+    users: {  }
+    vhosts: {  }
+    plugins: {  }
 elastic_search:
     install: '0'
     settings:
-        version: null
+        version: 1.4.1
         java_install: true
 solr:
-    install: '0'
+    install: '1'
     settings:
-        version: ''
-        port: ''
+        version: 4.10.2
+        port: '8984'
 
