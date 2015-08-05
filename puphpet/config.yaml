@@ -35,7 +35,7 @@ vagrantfile:
         synced_folder:
             vflsf_msfxe2hwexag:
                 source: vagrant-scripts
-                target: /home/vagrant/sctipts
+                target: /home/vagrant/scripts
                 sync_type: nfs
                 smb:
                     smb_host: ''
