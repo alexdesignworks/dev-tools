@@ -33,6 +33,25 @@ vagrantfile:
                     - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
                     - '--parser future'
         synced_folder:
+            vflsf_msfxe2hwexag:
+                source: vagrant-scripts
+                target: /home/vagrant/sctipts
+                sync_type: nfs
+                smb:
+                    smb_host: ''
+                    smb_username: ''
+                    smb_password: ''
+                rsync:
+                    args:
+                        - '--verbose'
+                        - '--archive'
+                        - '-z'
+                    exclude:
+                        - .vagrant/
+                        - .git/
+                    auto: 'true'
+                owner: vagrant
+                group: www-data
             vflsf_msfxe2hwexbg:
                 source: app
                 target: /var/www/app

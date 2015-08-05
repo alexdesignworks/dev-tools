@@ -6,6 +6,8 @@
 # - provisions new VM
 # - runs cache clear and DB updates
 #
+# Run from host OS.
+#
 
 # Drupal installation directory.
 APP_DIR=/var/www/app
