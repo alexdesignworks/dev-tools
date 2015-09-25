@@ -6,14 +6,14 @@
 # by simply re-ssh'ing into vagrant box.
 #
 # Usage (from within vagrant box):
-# . /home/vagrant/sctipts/cli-en.sh myapp.local
+# . /home/vagrant/sctipts/cli-debug-enable.sh app.local
 
 # IDE key as set in PHPStorm's server configuration.
 IDEKEY=PHPSTORM
 # Host OS' IP address.
 REMOTE_HOST=$(netstat -rn | grep "^0.0.0.0 " | cut -d " " -f10)
 # Default server name.
-SERVER_NAME="application"
+SERVER_NAME="app.local"
 
 # Pass server name as a first parameter as set in PHPStorm's server
 # configuration.
