@@ -29,3 +29,8 @@ codekit-config.json
 # Comment out below if you want to commit downloaded projects.
 /drupal7/*
 /drupal8/*
+
+#
+# Symfony vendor dir.
+#
+vendor
