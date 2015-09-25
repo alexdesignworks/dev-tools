@@ -4,10 +4,9 @@
 #
 # - destroys existing VM
 # - provisions new VM
+# - stores baseline snapshot for unmodified DB before updates run.
 # - runs cache clear and DB updates
-#
-# Run from host OS.
-#
+# - stores v1 snapshot for modified DB after updates ran.
 
 # Drupal installation directory.
 APP_DIR=/var/www/app
@@ -75,44 +74,61 @@ function countdown() {
   echo "        "
 }
 
+#
+# Take snapshot, if vagrant-vbox-snapshot plugin installed.
+#
+function take_snapshot (){
+  snapshot_name=$1
+  if vagrant plugin list | grep -q vagrant-vbox-snapshot ; then
+    vagrant snapshot take $snapshot_name
+  fi
+}
 
 # Check for Vagrantfile to make sure we are in the right path.
 if [ ! -e ./Vagrantfile ] ; then
   echo "This can only be run from the same path as your Vagrantfile"
   echo "  ie: cd ~/Projects/vagrant/ && ./vagrant-scripts/vagrant-rebuild.sh"
   exit 1
-else
-  # If we are in the right path, destroy everything.
-  echo "Destroying VM in 5 seconds"
-  countdown "00:00:05"
-  vagrant destroy -f
-
-  # On MacOSX sometimes virtualbox doesn't start properly on reboot
-  # Mavericks seems to have changed startup commands or something
-  # so if we are on MacOSX (Darwin) and /dev/vboxnetctl doesn't exist
-  # we need to restart virtualbox.
-  if [ "`uname -a | grep Darwin`" ] && [ ! -e /dev/vboxnetctl ] ; then
-    echo "Restarting VirtualBox to reload kernel module"
-    sudo /Library/StartupItems/VirtualBox/VirtualBox restart
-  fi
-
-  echo "Provisioning new VM"
-  vagrant up
-
-  # Run commands within vagrant box.
-  vagrant ssh --command=" \
-    # Export local functions into remote shell context.
-    $(typeset -f) && \
-    # Change directory.
-    cd $APP_DIR && \
-    # Check if current directory is a Drupal installation.
-    is_drupal && \
-    # Clear cache (Drupal version-agnostic).
-    drush_cache_clear && \
-    # Run DB updates.
-    $DRUSH updb -y \
-  "
-
-  # SSH into vagrant box.
-  vagrant ssh
 fi
+
+# If we are in the right path, destroy everything.
+echo "Destroying VM in 5 seconds"
+countdown "00:00:05"
+vagrant destroy -f
+
+# Remove any ssh keys as it may fail during next authentication.
+rm -rf puphpet/files/dot/ssh/*
+
+# On MacOSX sometimes virtualbox doesn't start properly on reboot
+# Mavericks seems to have changed startup commands or something
+# so if we are on MacOSX (Darwin) and /dev/vboxnetctl doesn't exist
+# we need to restart virtualbox.
+if [ "`uname -a | grep Darwin`" ] && [ ! -e /dev/vboxnetctl ] ; then
+  echo "Restarting VirtualBox to reload kernel module"
+  sudo /Library/StartupItems/VirtualBox/VirtualBox restart
+fi
+
+echo "Provisioning new VM"
+vagrant up
+
+take_snapshot "baseline"
+
+# Run commands within vagrant box.
+vagrant ssh --command=" \
+  # Export local functions into remote shell context.
+  $(typeset -f) && \
+  # Change directory.
+  cd $APP_DIR && \
+  # Check if current directory is a Drupal installation.
+  is_drupal && \
+  # Clear cache (Drupal version-agnostic).
+  drush_cache_clear && \
+  # Run DB updates.
+  $DRUSH updb -y \
+"
+
+# Try to take a snapshot.
+take_snapshot "v1"
+
+# SSH into vagrant box.
+vagrant ssh
