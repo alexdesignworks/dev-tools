@@ -10,6 +10,11 @@ if File.file?("#{dir}/puphpet/config-custom.yaml")
   configValues.deep_merge!(custom)
 end
 
+if File.file?("#{dir}/config.app.yaml")
+  custom = YAML.load_file("#{dir}/config.app.yaml")
+  configValues.deep_merge!(custom)
+end
+
 if File.file?("#{dir}/config.local.yaml")
   custom = YAML.load_file("#{dir}/config.local.yaml")
   configValues.deep_merge!(custom)
