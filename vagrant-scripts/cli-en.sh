@@ -23,3 +23,6 @@ fi
 
 export XDEBUG_CONFIG="idekey=$IDEKEY remote_host=$REMOTE_HOST"
 export PHP_IDE_CONFIG="serverName=$SERVER_NAME"
+
+echo XDEBUG_CONFIG=$XDEBUG_CONFIG
+echo PHP_IDE_CONFIG=$PHP_IDE_CONFIG
