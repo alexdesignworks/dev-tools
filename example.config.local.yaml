@@ -1,0 +1,16 @@
+#
+# PuPHPet local overrides.
+#
+# Copy any property with all parents from puphet/config.yml to overwrite.
+#
+vagrantfile:
+    vm:
+        hostname: app.local
+        memory: '512'
+        cpus: '1'
+        network:
+            private_network: 192.168.56.118
+            forwarded_port:
+                vflnp_ugs30l4bdiu3:
+                    host: '879'
+                    guest: '22'
