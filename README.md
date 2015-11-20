@@ -21,7 +21,9 @@ Download this and provision a virtual box - and you are ready to go!
 5. Some OSes require NFS server to be installed. OSX has NFS server inbuilt and running by default.
 6. Download this project.
 7. Navigate to project's directory and run<br/>
-   ```vagrant-scripts/vagrant-rebuild.sh```
+```
+vagrant-scripts/vagrant-rebuild.sh
+```
    
    
 ## What's in the box?
